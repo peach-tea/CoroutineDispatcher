@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class CoroutineDispatcher_Extension{
+public static class Co_Extension{
 
 	/// <summary>
 	/// コルーチン実行
@@ -12,7 +12,7 @@ public static class CoroutineDispatcher_Extension{
 	/// <param name="type">更新タイプ</param>
 	/// <returns></returns>
 	public static IEnumerator BeginCoroutine( this MonoBehaviour mono, IEnumerator coroutine, CoroutineDispatcher.eUpdateType type = CoroutineDispatcher.eUpdateType.Update ){
-		return CoroutineDispatcher.instance.Begin( coroutine, mono.gameObject, type );
+		return Co.Begin( coroutine, mono.gameObject, type );
 	}
 
 	/// <summary>
@@ -22,7 +22,7 @@ public static class CoroutineDispatcher_Extension{
 	/// <param name="type">更新タイプ</param>
 	/// <returns>実行したコルーチン</returns>
 	public static IEnumerator Begin( this IEnumerator routine, CoroutineDispatcher.eUpdateType type = CoroutineDispatcher.eUpdateType.Update ){
-		return CoroutineDispatcher.instance.Begin( routine, type );
+		return Co.Begin( routine, type );
 	}
 	/// <summary>
 	/// コルーチン終了後にコルーチンを再生
@@ -39,14 +39,11 @@ public static class CoroutineDispatcher_Extension{
 	/// アクション実行.
 	/// </summary>
 	/// <param name="routine">コルーチン</param>
-	/// <param name="action">コルーチン後に実行する処理</param>
+	/// <param name="action">コルーチン終了後に実行する処理</param>
 	/// <returns></returns>
 	public static IEnumerator Then( this IEnumerator routine, System.Action action ) {
 		yield return routine;
-		if( action != null ) {
-			action();
-		}
-		// 繋げられるように返す.
+		action?.Invoke();
 		yield return routine;
 	}
 
@@ -96,7 +93,7 @@ public static class CoroutineDispatcher_Extension{
 	/// <param name="update_type">更新タイプ</param>
 	/// <returns>実行中かどうか</returns>
 	public static bool IsUpdating( this IEnumerator routine ){
-		return CoroutineDispatcher.instance.IsUpdating( routine );
+		return Co.IsUpdating( routine );
 	}
 	/// <summary>
 	/// 実行中判定.
@@ -105,7 +102,7 @@ public static class CoroutineDispatcher_Extension{
 	/// <param name="update_type">更新タイプ</param>
 	/// <returns>実行中かどうか</returns>
 	public static bool IsUpdating( this List<IEnumerator> routines ){
-		return CoroutineDispatcher.instance.IsUpdating( routines );
+		return Co.IsUpdating( routines );
 	}
 	/// <summary>
 	/// 実行中判定.
@@ -114,6 +111,6 @@ public static class CoroutineDispatcher_Extension{
 	/// <param name="update_type">更新タイプ</param>
 	/// <returns>実行中かどうか</returns>
 	public static bool IsUpdating( this IEnumerator[] routines ){
-		return CoroutineDispatcher.instance.IsUpdating( routines );
+		return Co.IsUpdating( routines );
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class CoroutineConsumer{
 	IEnumerator[] _coroutines = null;
 	int _update_coroutine_num = 0;
@@ -23,6 +24,7 @@ public class CoroutineConsumer{
 			return _coroutines;
 		}
 	}
+
 	/// <summary>
 	/// 
 	/// </summary>
@@ -51,6 +53,7 @@ public class CoroutineConsumer{
 		while( coroutine != null && !_now_begin_coroutines.Contains( coroutine ) ) {
 			// update coroutine
 			if( !coroutine.MoveNext() ){
+				UnlinkGameObject( coroutine );
 				IEnumerator parent;
 				if( _nest_table.TryGetValue( coroutine, out parent )) {
 					_nest_table.Remove( coroutine );
@@ -108,9 +111,7 @@ public class CoroutineConsumer{
 			if( _nest_table.TryGetValue( coroutine, out parent )) {
 				_nest_table.Remove( coroutine );
 			}
-			if( _link_object_table.ContainsKey( coroutine )){
-				_link_object_table.Remove( coroutine );
-			}
+			UnlinkGameObject( coroutine );
 			coroutine = parent;
 		}
 		_coroutines[index] = null;
@@ -150,6 +151,7 @@ public class CoroutineConsumer{
 					_nest_table.Remove( coroutine );
 				}
 			}
+			UnlinkGameObject( coroutine );
 			_coroutines[i] = null;
 			end_num++;
 		}
@@ -210,6 +212,26 @@ public class CoroutineConsumer{
 	}
 
 	/// <summary>
+	/// 紐づけているゲームオブジェクト取得
+	/// </summary>
+	/// <param name="routine">コルーチン</param>
+	/// <returns>ゲームオブジェクト</returns>
+	public GameObject GetLinkGameObject( IEnumerator routine ){
+		if( routine == null ){
+			return null;
+		}
+		GameObject game_object;
+		IEnumerator parent;
+		while( routine != null ) {
+			if( _link_object_table.TryGetValue( routine, out game_object )){
+				return game_object;
+			}
+			_nest_table.TryGetValue( routine, out parent );
+			routine = parent;
+		}
+		return null;
+	}
+	/// <summary>
 	/// 紐づきゲームオブジェクト存在有無チェック
 	/// </summary>
 	/// <param name="routine">コルーチン</param>
@@ -229,4 +251,14 @@ public class CoroutineConsumer{
 		}
 		return true;
 	}
+	/// <summary>
+	/// 紐づけ解除
+	/// </summary>
+	/// <param name="routine">コルーチン</param>
+	void UnlinkGameObject( IEnumerator routine ){
+		if( _link_object_table.ContainsKey( routine )){
+			_link_object_table.Remove( routine );
+		}
+	}
+
 }
