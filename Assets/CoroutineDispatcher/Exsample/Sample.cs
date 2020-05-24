@@ -3,41 +3,55 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Sample : MonoBehaviour{
+	[SerializeField]
+	CoTween[] _tweens = null;
 
-	void Update(){
-		if(Input.GetKeyDown( KeyCode.Z )){
-			Debug.Log("[StartCoroutine]");
-			StartCoroutine( Test() );
-		}
-		if(Input.GetKeyDown( KeyCode.X )){
-			Debug.Log("[CoroutineDispatcher] this game_object begin ");
-			this.BeginCoroutine(Test());
-		}
-		if(Input.GetKeyDown( KeyCode.C )){
-			Debug.Log("[CoroutineDispatcher] Dispatcher begin ");
-			Co.Begin(Test());
-		}
-	}
+	IEnumerator _loop_coroutine = null;
+	int _count = 0;
 
-	public IEnumerator Test(){
-		float start_time = Time.time;
-		yield return Test2();
-		Debug.Log( "elapsed time : " + (Time.time - start_time) );
-	}
-	IEnumerator Test2(){
-		yield return WaitSeconds(1.0f);
-		yield break;
-	}
+	private void OnGUI() {
 
-	IEnumerator WaitSeconds( float second ){
-		var startTime = System.DateTimeOffset.UtcNow;
-		while (true){
-			yield return null;
- 
-			var elapsed = (System.DateTimeOffset.UtcNow - startTime).TotalSeconds;
-			if (elapsed >= second){
-				break;
+		GUILayout.Label("コルーチン実行状況 " + _count);
+
+		if( GUILayout.Button( "コルーチン実行" )){
+			EndCoroutine();
+			_loop_coroutine = Co.Begin( Loop() );
+			// or
+			// _loop_coroutine = Loop().Begin();
+		}
+		if( _loop_coroutine != null ){
+			if( GUILayout.Button( "コルーチン一時停止" )){
+				Co.Pause(_loop_coroutine, true);
+				// or
+				// _loop_coroutine.Pause(true);
 			}
-		};
+			if( GUILayout.Button( "コルーチン再開" )){
+				Co.Pause(_loop_coroutine, false);
+				// or
+				// _loop_coroutine.Pause(false);
+			}
+			if( GUILayout.Button( "コルーチン停止" )){
+				EndCoroutine();
+			}
+		}
+		if( GUILayout.Button( "Tween実行" )){
+			_tweens.Play().Begin();
+		}
+	}
+
+	void EndCoroutine(){
+		Co.End( _loop_coroutine );
+		// or
+		// _loop_coroutine.End();
+		_count = 0;
+		_loop_coroutine = null;
+	}
+
+
+	public IEnumerator Loop(){
+		while( true ){
+			_count++;
+			yield return null;
+		}
 	}
 }

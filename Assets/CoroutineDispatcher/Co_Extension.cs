@@ -24,6 +24,26 @@ public static class Co_Extension{
 	public static IEnumerator Begin( this IEnumerator routine, CoroutineDispatcher.eUpdateType type = CoroutineDispatcher.eUpdateType.Update ){
 		return Co.Begin( routine, type );
 	}
+
+	/// <summary>
+	/// コルーチン停止
+	/// </summary>
+	/// <param name="routine">停止するコルーチン</param>
+	/// <param name="type">更新タイプ</param>
+	public static IEnumerator End( this IEnumerator routine, CoroutineDispatcher.eUpdateType type = CoroutineDispatcher.eUpdateType.Update ){
+		Co.End( routine, type );
+		return routine;
+	}
+	/// <summary>
+	/// コルーチン一時停止
+	/// </summary>
+	/// <param name="coroutine">実行するコルーチン</param>
+	/// <param name="is_pause">true:一時停止. false:再開</param>
+	/// <param name="type">更新タイプ</param>
+	/// <returns>成否</returns>
+	public static bool Pause( this IEnumerator routine, bool is_pause, CoroutineDispatcher.eUpdateType type = CoroutineDispatcher.eUpdateType.Update ){
+		return Co.Pause( routine, is_pause, type );
+	}
 	/// <summary>
 	/// コルーチン終了後にコルーチンを再生
 	/// </summary>
@@ -60,7 +80,16 @@ public static class Co_Extension{
 			yield return null;
 		}
 	}
-
+	/// <summary>
+	/// 実行終了待ち.
+	/// </summary>
+	/// <param name="routine">コルーチン</param>
+	/// <param name="type">更新タイプ</param>
+	public static IEnumerator Wait( this IEnumerator routines ){
+		while( routines.IsUpdating()) {
+			yield return null;
+		}
+	}
 	/// <summary>
 	/// 実行終了待ち.
 	/// </summary>

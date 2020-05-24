@@ -24,6 +24,8 @@ public class CoroutineConsumer{
 			return _coroutines;
 		}
 	}
+	//! 一時停止中のコルーチン
+	List<IEnumerator> _pause_coroutines = new List<IEnumerator>(128);
 
 	/// <summary>
 	/// 
@@ -131,6 +133,9 @@ public class CoroutineConsumer{
 			if( _now_begin_coroutines.Contains( coroutine )){
 				continue;
 			}
+			if( _pause_coroutines.Contains( coroutine )){
+				continue;
+			}
 			// game_object 生存チェック
 			if( !IsAliveGameObject( coroutine )){
 				End( coroutine );
@@ -144,6 +149,7 @@ public class CoroutineConsumer{
 					continue;
 				}
 				_nest_table.Add( nest_coroutine, coroutine );
+				Begin( nest_coroutine );
 			} else {
 				IEnumerator parent_coroutine;
 				if( _nest_table.TryGetValue( coroutine, out parent_coroutine )) {
@@ -173,6 +179,23 @@ public class CoroutineConsumer{
 
 		_now_begin_coroutines.Clear();
 		_update_coroutine_num -= end_num;
+	}
+	/// <summary>
+	/// 一時停止
+	/// </summary>
+	/// <param name="routine">対象コルーチン</param>
+	/// <param name="is_pause">true:一時停止. false:再開</param>
+	/// <returns>成否</returns>
+	public bool Pause( IEnumerator routine, bool is_pause ){
+		if( is_pause ){
+			if( _pause_coroutines.Contains(routine)){
+				return false;
+			}
+			_pause_coroutines.Add( routine );
+			return true;
+		}else{
+			return _pause_coroutines.Remove( routine );
+		}
 	}
 
 	/// <summary>

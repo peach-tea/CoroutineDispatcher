@@ -61,6 +61,16 @@ public class CoroutineDispatcher : MonoBehaviour{
 	public void End( IEnumerator routine, eUpdateType type = eUpdateType.Update ){
 		_consumers[(int)type].End( routine );
 	}
+	/// <summary>
+	/// コルーチン一時停止
+	/// </summary>
+	/// <param name="coroutine">実行するコルーチン</param>
+	/// <param name="is_pause">true:一時停止. false:再開</param>
+	/// <param name="type">更新タイプ</param>
+	/// <returns></returns>
+	public IEnumerator Begin( IEnumerator coroutine, bool is_pause, eUpdateType type = eUpdateType.Update ){
+		return Begin( coroutine, null );
+	}
 
 #region -- Update Coroutine --
 	void Update() {
@@ -86,5 +96,16 @@ public class CoroutineDispatcher : MonoBehaviour{
 			}
 		}
 		return false;
+	}
+
+	/// <summary>
+	/// コルーチン一時停止
+	/// </summary>
+	/// <param name="coroutine">実行するコルーチン</param>
+	/// <param name="is_pause">true:一時停止. false:再開</param>
+	/// <param name="type">更新タイプ</param>
+	/// <returns>成否</returns>
+	public bool Pause( IEnumerator coroutine, bool is_pause, eUpdateType type = eUpdateType.Update ){
+		return _consumers[(int)type].Pause(coroutine, is_pause);
 	}
 }

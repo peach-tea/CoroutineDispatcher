@@ -11,14 +11,15 @@ public class CoroutineDispatcher_Inspector : Editor{
 
 	public override void OnInspectorGUI(){
 		DrawDefaultInspector();
-		// 再生中のみの動作
-		if( !Application.isPlaying ) {
-			return;
-		}
+
 		var dispatcher = target as CoroutineDispatcher;
 		_update_type = (CoroutineDispatcher.eUpdateType)EditorGUILayout.EnumPopup( _update_type );
-
-		var consumer = dispatcher.consumers[(int)_update_type];
+		CoroutineConsumer consumer = null;
+		if( !Application.isPlaying ) {
+			consumer = Co.editorConsumer;
+		}else{
+			consumer = dispatcher.consumers[(int)_update_type];
+		}
 		for( int i = 0; i < consumer.runNum; ++i ){
 			var coroutine = consumer.coroutines[i];
 			if( coroutine == null ){

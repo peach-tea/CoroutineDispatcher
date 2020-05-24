@@ -7,6 +7,28 @@ using UnityEngine;
 /// Coroutine実行アクセッサ
 /// </summary>
 public static class Co {
+
+	public static float deltaTime{
+		get{
+#if UNITY_EDITOR
+			if( !Application.isPlaying ){
+				return editorDeltaTime * Time.timeScale;
+			}
+#endif
+			return Time.deltaTime;
+		}
+	}
+	public static float unscaledDeltaTime{
+		get{
+#if UNITY_EDITOR
+			if( !Application.isPlaying ){
+				return editorDeltaTime;
+			}
+#endif
+			return Time.unscaledDeltaTime;
+		}
+	}
+
 	static CoroutineDispatcher _dispatcher = null;		//!< コルーチン実行者
 	static CoroutineDispatcher dispatcher{
 		get{
@@ -21,8 +43,11 @@ public static class Co {
 		}
 	}
 #if UNITY_EDITOR
+	public static float editorDeltaTime { private set; get; } = 0.0f;
+
+	static double last_time_sice_startup = 0.0f;
 	static CoroutineConsumer _editor_consumer = null;	//!< Editor用のコルーチン実行者
-	static CoroutineConsumer editorConsumer{
+	static public CoroutineConsumer editorConsumer{
 		get{
 			if( _editor_consumer == null ){
 				_editor_consumer = new CoroutineConsumer(256);
@@ -32,8 +57,16 @@ public static class Co {
 		}
 	}
 	static void EditorUpdate(){
+		if( last_time_sice_startup == 0f ){
+			last_time_sice_startup = UnityEditor.EditorApplication.timeSinceStartup;
+		}
+		editorDeltaTime = (float)(UnityEditor.EditorApplication.timeSinceStartup - last_time_sice_startup);
+		last_time_sice_startup = UnityEditor.EditorApplication.timeSinceStartup;
+		UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+
 		_editor_consumer?.ConsumeEnumerator();
 	}
+
 #endif
 	/// <summary>
 	/// コルーチン実行
@@ -100,6 +133,22 @@ public static class Co {
 		while( r0 != null || r1 != null || r2 != null || r3 != null || r4 != null || r5 != null ){
 			yield return null;
 		}
+	}
+
+	/// <summary>
+	/// コルーチン一時停止
+	/// </summary>
+	/// <param name="coroutine">実行するコルーチン</param>
+	/// <param name="is_pause">true:一時停止. false:再開</param>
+	/// <param name="type">更新タイプ</param>
+	/// <returns>成否</returns>
+	public static bool Pause( IEnumerator coroutine, bool is_pause, CoroutineDispatcher.eUpdateType type = CoroutineDispatcher.eUpdateType.Update ){
+#if UNITY_EDITOR
+		if( !Application.isPlaying ){
+			return editorConsumer.Pause(coroutine, is_pause );
+		}
+#endif
+		return dispatcher.Pause( coroutine, is_pause, type );
 	}
 	/// <summary>
 	/// コルーチン停止
